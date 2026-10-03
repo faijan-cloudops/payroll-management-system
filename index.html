@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Payroll Management System - Secure Login Portal">
+    <title>Payroll Management System – Login</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="login-page">
+        <div class="login-card">
+            <!-- Logo -->
+            <div class="login-logo">
+                <div class="logo-icon"><i class="bi bi-wallet2"></i></div>
+                <h1>Payroll Management</h1>
+                <p>Sign in to access your dashboard</p>
+            </div>
+
+            <!-- Role Tabs -->
+            <div class="role-tabs">
+                <button class="role-tab active" id="tabAdmin" onclick="switchRole('admin')">
+                    <i class="bi bi-shield-lock"></i> Admin
+                </button>
+                <button class="role-tab" id="tabEmployee" onclick="switchRole('employee')">
+                    <i class="bi bi-person"></i> Employee
+                </button>
+            </div>
+
+            <!-- Error Message -->
+            <div class="login-error" id="loginError"></div>
+
+            <!-- Admin Login Form -->
+            <form class="login-form" id="adminForm" onsubmit="handleAdminLogin(event)">
+                <div class="form-group">
+                    <label for="adminUsername">Username</label>
+                    <i class="bi bi-person-fill input-icon"></i>
+                    <input type="text" class="form-control" id="adminUsername" placeholder="Enter admin username"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Password</label>
+                    <i class="bi bi-lock-fill input-icon"></i>
+                    <input type="password" class="form-control" id="adminPassword" placeholder="Enter password"
+                        required>
+                </div>
+                <button type="submit" class="login-btn">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In as Admin
+                </button>
+            </form>
+
+            <!-- Employee Login Form -->
+            <form class="login-form" id="employeeForm" style="display:none;" onsubmit="handleEmployeeLogin(event)">
+                <div class="form-group">
+                    <label for="empEmail">Email or Employee ID</label>
+                    <i class="bi bi-person-badge input-icon"></i>
+                    <input type="text" class="form-control" id="empEmail" placeholder="you@company.com or e.g. 5"
+                        required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="empPassword">Password</label>
+                    <i class="bi bi-lock-fill input-icon"></i>
+                    <input type="password" class="form-control" id="empPassword" placeholder="Enter your password"
+                        required autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-btn">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In as Employee
+                </button>
+            </form>
+
+            <div style="text-align:center; margin-top:24px; color:var(--grey-400); font-size:12px;">
+                <p>Demo credentials (data is stored in this browser’s localStorage)</p>
+                <p style="margin-top:4px;">Admin: <strong style="color:var(--grey-600);">admin / admin123</strong></p>
+                <p style="margin-top:4px;">Employee: sign in with <strong style="color:var(--grey-600);">email</strong> or <strong style="color:var(--grey-600);">Employee ID</strong> plus the password set by admin (default is often <strong style="color:var(--grey-600);">emp123</strong>).</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Check if already logged in
+        (function () {
+            const s = getSession();
+            if (s) {
+                window.location.href = s.role === 'admin' ? 'admin.html' : 'employee.html';
+            }
+        })();
+
+        let currentRole = 'admin';
+
+        function switchRole(role) {
+            currentRole = role;
+            document.getElementById('tabAdmin').classList.toggle('active', role === 'admin');
+            document.getElementById('tabEmployee').classList.toggle('active', role === 'employee');
+            document.getElementById('adminForm').style.display = role === 'admin' ? 'block' : 'none';
+            document.getElementById('employeeForm').style.display = role === 'employee' ? 'block' : 'none';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('loginError');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const admin = findAdmin(username, password);
+            if (admin) {
+                setSession('admin', admin);
+                window.location.href = 'admin.html';
+            } else {
+                showError('Invalid username or password. Please try again.');
+            }
+        }
+
+        function handleEmployeeLogin(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('empEmail').value.trim();
+            const password = normalizePasswordInput(document.getElementById('empPassword').value);
+            const emp = findEmployeeByLogin(identifier, password);
+            if (emp) {
+                setSession('employee', emp);
+                window.location.href = 'employee.html';
+            } else {
+                showError('Invalid email, Employee ID, or password. Please try again.');
+            }
+        }
+    </script>
+</body>
+
+</html>
